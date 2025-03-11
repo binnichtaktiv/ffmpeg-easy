@@ -1,9 +1,10 @@
 import subprocess, os
+from pathlib import Path
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-fileLink = input("enter your video / audio path:\n")
+filePath = input("enter your video / audio path:\n")
 clearTerminal()
 
 select = int(input("what do you want to do?\n\n"
@@ -59,8 +60,39 @@ def getOutputPath():
 
     return outputPath
 
+def getFileName():
+
+    fileName = Path(os.path.basename(filePath)).stem
+    while (answer := input(f"do you want a different filename? (enter without file extension like .mp4) current filename: {fileName}\n[y/n]\n").lower()) not in ['y', 'n']:
+        print("\ninvalid input. please enter 'y' or 'n'.")
+        clearTerminal()
+
+    clearTerminal()
+    
+    if answer == 'y':
+        fileName = input("enter new filename:\n")
+        clearTerminal()
+
+    return fileName
+
+def copyOrReEncode():
+    copy = input("[1] keep original codecs (copy – no quality loss, much faster, but not always supported)\n or\n[2] re-encode?\n")
+    
+    if copy == 1:
+        copy = True
+    else:
+        copy = False
+
 if select == 1:
+    fileName = getFileName()
     fileFormat = videoFormat()
-    print(fileFormat)
     outputPath = getOutputPath()
-    print(outputPath)
+    copy = copyOrReEncode()
+
+    cmd = f'ffmpeg -i {filePath} {outputPath}/{fileName}.{fileFormat}'
+
+    if copy == True:
+        cmd += "-c copy"
+
+print(cmd)
+subprocess.call(cmd, shell=True)
