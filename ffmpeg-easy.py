@@ -76,23 +76,34 @@ def getFileName():
     return fileName
 
 def copyOrReEncode():
-    copy = input("[1] keep original codecs (copy – no quality loss, much faster, but not always supported)\n or\n[2] re-encode?\n")
-    
-    if copy == 1:
-        copy = True
+    hi = input("[1] keep original codecs (copy – no quality loss, much faster, but not always supported)\n or\n[2] re-encode?\n")
+    clearTerminal()
+    if hi == "1":
+        copy = " -c copy"
     else:
-        copy = False
+        copy = ""
+    return copy
+    
+# maybe unnecessary but ignore pls
+
+fileName = getFileName()
+fileFormat = videoFormat()
+outputPath = getOutputPath()
+copy = copyOrReEncode()
+fullOutputPath = f"{outputPath}/{fileName}.{fileFormat}"
+
 
 if select == 1:
-    fileName = getFileName()
-    fileFormat = videoFormat()
-    outputPath = getOutputPath()
-    copy = copyOrReEncode()
 
-    cmd = f'ffmpeg -i {filePath} {outputPath}/{fileName}.{fileFormat}'
+    cmd = f'ffmpeg -i {filePath} {copy} {fullOutputPath}'
+    
+if select == 2:
 
-    if copy == True:
-        cmd += "-c copy"
+    startTime = input("use hh:mm:ss format!\nenter time where the video should start:\n")
+    endTime = input("enter time where the video should end:\n")
+    clearTerminal()
+
+    cmd = f'ffmpeg -i {filePath} -ss {startTime} -to {endTime} {copy} {fullOutputPath}'
 
 print(cmd)
 subprocess.call(cmd, shell=True)
