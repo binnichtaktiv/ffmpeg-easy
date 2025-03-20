@@ -92,10 +92,11 @@ outputPath = getOutputPath()
 copy = copyOrReEncode()
 fullOutputPath = f"{outputPath}/{fileName}.{fileFormat}"
 
+cmd = f'ffmpeg -i {filePath} '
 
 if select == 1:
 
-    cmd = f'ffmpeg -i {filePath} {copy} {fullOutputPath}'
+    cmd += f'{filePath} {copy} {fullOutputPath}'
     
 if select == 2:
 
@@ -103,7 +104,39 @@ if select == 2:
     endTime = input("enter time where the video should end:\n")
     clearTerminal()
 
-    cmd = f'ffmpeg -i {filePath} -ss {startTime} -to {endTime} {copy} {fullOutputPath}'
+    cmd += f'-ss {startTime} -to {endTime} {copy} {fullOutputPath}'
+
+if select == 3:
+    x = input("enter the aspect ratio width (e.g., 9 for 9:16):\n")
+    y = input("enter the aspect ratio height (e.g., 16 for 9:16):\n")
+
+    cmd += f'-vf "crop=in_h*{x}/{y}:in_h" {copy} {fullOutputPath}'
+
+if select == 4:
+    select = input("what do you want to do?\n[1] rotate 90° clockwise\n[2] rotate 90° counterclockwise\n[3] rotate 180° clockwise\n[4] rotate 180° counterclockwise\n[5] rotate 270° clockwise\n[6] rotate 270° counterclockwise\n [7] flip horizontally\n[8] flip vertically\n")
+
+    if select == "1":
+        cmd += '-vf "transpose=2"'
+    if select == "2":
+        cmd += '-vf "transpose=1"'
+    if select == "3":
+        cmd += '-vf "rotate=-PI"'
+    if select == "4":
+        cmd += '-vf "rotate=PI"'
+    if select == "5":
+        cmd += '-vf "rotate=-3*PI/2"'
+    if select == "6":
+        cmd += '-vf "rotate=3*PI/2"'
+    if select == "7":
+        cmd += '-vf "hflip"'
+    if select == "8":
+        cmd += '-vf "vflip"'
+    else:
+        print("invalid input")
 
 print(cmd)
 subprocess.call(cmd, shell=True)
+
+'''
+/home/jonas/test.webm
+'''
