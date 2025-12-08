@@ -1,6 +1,8 @@
 import subprocess, os
 from pathlib import Path
 
+copyAllowList = [1,8,12,17]
+
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -13,6 +15,7 @@ select = int(input("what do you want to do?\n\n"
     "[9] combine several videos into one\n[10] convert image to video (still image video)\n\n- edit audio\n[11] change volume\n"
     "[12] extract audio from a video\n[13] add or replace audio in a video\n[14] change pitch & speed\n\n-effects & filters\n"
     "[15] make video black & white\n[16] add text & watermark\n\n[17] record YouTube livestream\n"))
+
 clearTerminal()
 
 def videoFormat():
@@ -89,7 +92,10 @@ def copyOrReEncode():
 fileName = getFileName()
 fileFormat = videoFormat()
 outputPath = getOutputPath()
-copy = copyOrReEncode()
+
+if select in copyAllowList:
+    copy = copyOrReEncode()
+    
 fullOutputPath = f"{outputPath}/{fileName}.{fileFormat}"
 
 cmd = f'ffmpeg -i {filePath} '
@@ -104,16 +110,16 @@ if select == 2:
     endTime = input("enter time where the video should end:\n")
     clearTerminal()
 
-    cmd += f'-ss {startTime} -to {endTime} {copy} {fullOutputPath}'
+    cmd += f'-ss {startTime} -to {endTime} {fullOutputPath}'
 
 if select == 3:
     x = input("enter the aspect ratio width (e.g., 9 for 9:16):\n")
     y = input("enter the aspect ratio height (e.g., 16 for 9:16):\n")
 
-    cmd += f'-vf "crop=in_h*{x}/{y}:in_h" {copy} {fullOutputPath}'
+    cmd += f'-vf "crop=in_h*{x}/{y}:in_h" {fullOutputPath}'
 
 if select == 4:
-    select = input("what do you want to do?\n[1] rotate 90° clockwise\n[2] rotate 90° counterclockwise\n[3] rotate 180° clockwise\n[4] rotate 180° counterclockwise\n[5] rotate 270° clockwise\n[6] rotate 270° counterclockwise\n [7] flip horizontally\n[8] flip vertically\n")
+    select = input("what do you want to do?\n[1] rotate 90° clockwise\n[2] rotate 90° counterclockwise\n[3] rotate 180° clockwise\n[4] rotate 180° counterclockwise\n[5] rotate 270° clockwise\n[6] rotate 270° counterclockwise\n[7] flip horizontally\n[8] flip vertically\n")
 
     if select == "1":
         cmd += '-vf "transpose=2"'
@@ -134,9 +140,27 @@ if select == 4:
     else:
         print("invalid input")
 
+    cmd += " " + fullOutputPath
+
+if select == 5:
+    while True:
+        try:
+            speed = int(input(
+                "Enter playback speed (integer between -5 and 10, excluding zero):\n"
+                "  - Negative values slow down the video (e.g. -4 means 4x slower or 0.25x speed)\n"
+                "  - Positive values speed up the video (e.g. 3 means 3x faster)\n"
+                "  - Zero is not allowed\n"
+                "Your choice: "
+            ))
+            if -5 <= speed <= 10 and speed != 0:
+                break
+            else:
+                print("Please enter an integer between -5 and 10, excluding zero.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+if select == 6:
+    q = input("[1] use only part of the video as a GIF\nor\n[2] use a whole short video as a GIF\n")
+
 print(cmd)
 subprocess.call(cmd, shell=True)
-
-'''
-/home/jonas/test.webm
-'''
