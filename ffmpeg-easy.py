@@ -106,7 +106,7 @@ def getFileName():
 
 
 def copyOrReEncode():
-    hi = input("[1] keep original codecs (copy – no quality loss, much faster, but not always supported)\n or\n[2] re-encode?\n")
+    hi = input("[1] keep original codecs (copy - no quality loss, much faster, but not always supported)\n or\n[2] re-encode?\n")
     clearTerminal()
     if hi == "1":
         copy = " -c copy"
@@ -136,20 +136,20 @@ cmd = f'ffmpeg -i {filePath} '
 
 if select == 1:
 
-    cmd += f'{filePath} {copy} {fullOutputPath}'
+    cmd += f'{filePath} {copy}'
 
 if select == 2:
 
-    getStartEndT()
+    startTime, endTime = getStartEndT()
     clearTerminal()
 
-    cmd += f'-ss {startTime} -to {endTime} {fullOutputPath}'
+    cmd += f'-ss {startTime} -to {endTime}'
 
 if select == 3:
     x = input("enter the aspect ratio width (e.g., 9 for 9:16):\n")
     y = input("enter the aspect ratio height (e.g., 16 for 9:16):\n")
 
-    cmd += f'-vf "crop=in_h*{x}/{y}:in_h" {fullOutputPath}'
+    cmd += f'-vf "crop=in_h*{x}/{y}:in_h"'
 
 if select == 4:
     while (q := int(input(f"what do you want to do?\n"
@@ -182,8 +182,6 @@ if select == 4:
     if q == "8":
         cmd += '-vf "vflip"'
 
-    cmd += " " + fullOutputPath
-
 if select == 5:
     q = int(input(f"Enter playback speed:\n"
                   "- Negative values slow down the video (e.g. -4 means 4x slower or 0.25x speed)\n"
@@ -213,7 +211,7 @@ if select == 5:
     tempFactor = round(tempFactor, 3)
     atempoFilter += f"atempo={tempFactor}"
 
-    cmd += f'-filter:v "{setptsFilter}" -filter:a "{atempoFilter}" {fullOutputPath}'
+    cmd += f'-filter:v "{setptsFilter}" -filter:a "{atempoFilter}"'
 
 if select == 6:
     while (q := int(input(f"[1] use only part of the video as a GIF\nor\n[2] use a whole short video as a GIF\n"))) not in range(1, 3):
@@ -223,10 +221,10 @@ if select == 6:
 
     if q == 1:
         startTime, endTime = getStartEndT()
-        cmd += f'-ss {startTime} -to {endTime} -vf "fps=15,scale=600:-1:flags=lanczos" {fullOutputPath}'
+        cmd += f'-ss {startTime} -to {endTime} -vf "fps=15,scale=600:-1:flags=lanczos"'
 
     if q == 2:
-        cmd += f'-vf "fps=15,scale=600:-1:flags=lanczos" {fullOutputPath}'
+        cmd += f'-vf "fps=15,scale=600:-1:flags=lanczos"'
 
 if select == 7:
     while (q := int(input(f"[1] only blur a part of the video (from minute x to y)\nor\n[2] blur full video\n"))) not in range(1, 3):
@@ -290,7 +288,8 @@ if select == 7:
     if q == 1 and q2 == 1:
         cmd += f'"[0:v]crop={w}:{h}:{x}:{y},boxblur={q3}:1:enable=\'gte(t,{startTime})*lte(t,{endTime})\'[b]; [0:v][b]overlay={x}:{y}"'
 
-    cmd += " " + fullOutputPath
+
+cmd += " " + fullOutputPath
 
 print(cmd)
 subprocess.call(cmd, shell=True)
