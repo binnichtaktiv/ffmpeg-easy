@@ -30,7 +30,9 @@ clearTerminal()
 
 
 def videoFormat():
-    fileFormat = input("enter the file format to which you want to convert your file - e.g. mp4, mp3, mkv \n(to see all supported file formats run 'ffmpeg -codecs' or 'ffmpeg -formats')\n").lower().strip()
+    fileFormat = input("enter the file format to which you want to convert your file\n"
+                       "e.g. mp4, mp3, mkv\n"
+                       "(to see all supported file formats run 'ffmpeg -codecs' or 'ffmpeg -formats')\n").lower().strip()
     clearTerminal()
     return fileFormat
 
@@ -150,48 +152,74 @@ if select == 3:
     cmd += f'-vf "crop=in_h*{x}/{y}:in_h" {fullOutputPath}'
 
 if select == 4:
-    select = input("what do you want to do?\n[1] rotate 90° clockwise\n[2] rotate 90° counterclockwise\n[3] rotate 180° clockwise\n[4] rotate 180° counterclockwise\n[5] rotate 270° clockwise\n[6] rotate 270° counterclockwise\n[7] flip horizontally\n[8] flip vertically\n")
+    while (q := int(input(f"what do you want to do?\n"
+                          "[1] rotate 90° clockwise\n"
+                          "[2] rotate 90° counterclockwise\n"
+                          "[3] rotate 180° clockwise\n"
+                          "[4] rotate 180° counterclockwise\n"
+                          "[5] rotate 270° clockwise\n"
+                          "[6] rotate 270° counterclockwise\n"
+                          "[7] flip horizontally\n"
+                          "[8] flip vertically\n"))) not in range(1, 9):
+        clearTerminal()
+        print("[!] enter a valid option!")
+    clearTerminal()
 
-    if select == "1":
+    if q == "1":
         cmd += '-vf "transpose=2"'
-    if select == "2":
+    if q == "2":
         cmd += '-vf "transpose=1"'
-    if select == "3":
+    if q == "3":
         cmd += '-vf "rotate=-PI"'
-    if select == "4":
+    if q == "4":
         cmd += '-vf "rotate=PI"'
-    if select == "5":
+    if q == "5":
         cmd += '-vf "rotate=-3*PI/2"'
-    if select == "6":
+    if q == "6":
         cmd += '-vf "rotate=3*PI/2"'
-    if select == "7":
+    if q == "7":
         cmd += '-vf "hflip"'
-    if select == "8":
+    if q == "8":
         cmd += '-vf "vflip"'
-    else:
-        print("invalid input")
 
     cmd += " " + fullOutputPath
 
 if select == 5:
-    while True:
-        try:
-            speed = int(input(
-                "Enter playback speed (integer between -5 and 10, excluding zero):\n"
-                "  - Negative values slow down the video (e.g. -4 means 4x slower or 0.25x speed)\n"
-                "  - Positive values speed up the video (e.g. 3 means 3x faster)\n"
-                "  - Zero is not allowed\n"
-                "Your choice: "
-            ))
-            if -5 <= speed <= 10 and speed != 0:
-                break
-            else:
-                print("Please enter an integer between -5 and 10, excluding zero.")
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
+    q = int(input(f"Enter playback speed:\n"
+                  "- Negative values slow down the video (e.g. -4 means 4x slower or 0.25x speed)\n"
+                  "- Positive values speed up the video (e.g. 3 means 3x faster)\n"
+                  "- Zero is not allowed\n"
+                  "Your choice: "))
+    clearTerminal()
+
+    if q > 0:
+        setptsFilter = f"setpts=PTS/{q}"
+    else:
+        setptsFilter = f"setpts=PTS*{abs(q)}"
+
+    audioFactor = q if q > 0 else 1 / abs(q)
+
+    atempoFilter = ""
+    tempFactor = audioFactor
+
+    while tempFactor > 2:
+        atempoFilter += "atempo=2,"
+        tempFactor /= 2
+
+    while tempFactor < 0.5:
+        atempoFilter += "atempo=0.5,"
+        tempFactor *= 2
+
+    tempFactor = round(tempFactor, 3)
+    atempoFilter += f"atempo={tempFactor}"
+
+    cmd += f'-filter:v "{setptsFilter}" -filter:a "{atempoFilter}" {fullOutputPath}'
 
 if select == 6:
-    q = int(input("[1] use only part of the video as a GIF\nor\n[2] use a whole short video as a GIF\n"))
+    while (q := int(input(f"[1] use only part of the video as a GIF\nor\n[2] use a whole short video as a GIF\n"))) not in range(1, 3):
+        clearTerminal()
+        print("[!] enter a valid option!")
+    clearTerminal()
 
     if q == 1:
         startTime, endTime = getStartEndT()
@@ -200,42 +228,27 @@ if select == 6:
     if q == 2:
         cmd += f'-vf "fps=15,scale=600:-1:flags=lanczos" {fullOutputPath}'
 
-    else:
-        print("invalid input")
-
 if select == 7:
-    while True:
-        q = int(input("[1] only blur a part of the video (from minute x to y)\nor\n[2] blur full video\n"))
+    while (q := int(input(f"[1] only blur a part of the video (from minute x to y)\nor\n[2] blur full video\n"))) not in range(1, 3):
         clearTerminal()
-
-        if q in range(1, 3):
-            break
-
         print("[!] enter a valid option!")
+    clearTerminal()
 
-    while True:
-        q2 = int(input("[1] only blur a specific area of the video\nor\n[2] fullscreen blur\n"))
+    while (q2 := int(input(f"[1] only blur a specific area of the video\nor\n[2] fullscreen blur\n"))) not in range(1, 3):
         clearTerminal()
-
-        if q2 in range(1, 3):
-            break
-
         print("[!] enter a valid option!")
+    clearTerminal()
 
-    while True:
-        q3 = int(input(
-            "enter blur strength:\n"
-            "3-5    = very light   | soften noise, subtle smoothing\n"
-            "8-12   = moderate     | soften ui elements, mild anonymizing\n"
-            "15-20  = strong       | hide text, clear anonymizing\n"
-            "25-35  = very strong  | hide faces or license plates\n"
-            "40-60  = extreme      | full anonymization\n"
-            "80-120 = massive      | shapes only, no details left\n"))
+    while (q3 := int(input(f"enter blur strength:\n"
+                           "3-5    = very light   | soften noise, subtle smoothing\n"
+                           "8-12   = moderate     | soften ui elements, mild anonymizing\n"
+                           "15-20  = strong       | hide text, clear anonymizing\n"
+                           "25-35  = very strong  | hide faces or license plates\n"
+                           "40-60  = extreme      | full anonymization\n"
+                           "80-120 = massive      | shapes only, no details left\n"))) not in range(3, 121):
         clearTerminal()
-
-        if q3 in range(3, 121):
-            break
         print("[!] enter a valid option!")
+    clearTerminal()
 
     if q == 1:
         startTime, endTime = getStartEndT()
