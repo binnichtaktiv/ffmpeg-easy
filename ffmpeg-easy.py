@@ -288,6 +288,35 @@ if select == 7:
     if q == 1 and q2 == 1:
         cmd += f'"[0:v]crop={w}:{h}:{x}:{y},boxblur={q3}:1:enable=\'gte(t,{startTime})*lte(t,{endTime})\'[b]; [0:v][b]overlay={x}:{y}"'
 
+if select == 8:
+    while (q := int(input(f"[1] extract subtitles\n"
+                          "[2] add subtitles inside the video as a selectable subtitle track\n"
+                          "[3] add subtitles directly into the video image\n"))) not in range(1, 4):
+        clearTerminal()
+        print("[!] enter a valid option!")
+    clearTerminal()
+
+    if q == 1:
+        while (q2 := int(input(f"[1] use the first subtitle track (default)\n"
+                               "[2] choose a different subtitle track\n"
+                               "[3] export all subtitle tracks\n"))) not in range(1, 4):
+            clearTerminal()
+            print("[!] enter a valid option!")
+    clearTerminal()
+
+    if q2 == 1:
+        cmd += f'-map 0:s:0 subtitle.srt'
+
+    if q2 == 2:
+        probe = subprocess.run(
+            f"ffprobe -v error -select_streams s -show_entries stream=index,codec_name:stream_tags=language {filePath}",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True
+        )
+        print(probe.stdout)
+
 
 cmd += " " + fullOutputPath
 
