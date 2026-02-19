@@ -302,23 +302,27 @@ if select == 8:
                                "[3] export all subtitle tracks\n"))) not in range(1, 4):
             clearTerminal()
             print("[!] enter a valid option!")
-    clearTerminal()
+        clearTerminal()
 
-    if q2 == 1:
-        cmd += f'-map 0:s:0 subtitle.srt'
+        if q2 == 1:
+            cmd += f'-map 0:s:0 subtitle.srt'
 
-    if q2 == 2:
-        probe = subprocess.run(
-            f"ffprobe -v error -select_streams s -show_entries stream=index,codec_name:stream_tags=language {filePath}",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            shell=True
-        )
-        print(probe.stdout)
+        if q2 == 2:
+            subprocess.run(f"ffprobe -v error -select_streams s -show_entries stream=index,codec_name:stream_tags=language {filePath}", shell=True)
+            index = input("[!] search for the language you want and then enter index= number of the language you want:\n")
+            clearTerminal()
+            cmd += f'-map 0:{index} subtitle.srt'
 
+        if q2 == 3:
+            out = subprocess.run(["ffprobe", filePath], capture_output=True, text=True).stderr
+            count = out.count("Subtitle:")
 
-cmd += " " + fullOutputPath
+            for i in range(count):
+                subprocess.call(f"{cmd}-map 0:s:{i} -c:s srt subtitle_{i}.srt", shell=True)
 
-print(cmd)
-subprocess.call(cmd, shell=True)
+# very bad workaround for now
+if select != 8 and q == 1:
+    cmd += " " + fullOutputPath
+
+    print(cmd)
+    subprocess.call(cmd, shell=True)
